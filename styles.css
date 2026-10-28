@@ -39,7 +39,7 @@ body::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 999;
+  z-index: 9999;
   pointer-events: none;
   background:
     linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
@@ -73,6 +73,89 @@ body::before {
       rgba(255, 0, 255, 0.05) 0%,
       transparent 60%
     );
+}
+
+/* ============ CUSTOM CYBERPUNK CURSOR ============ */
+@media (hover: hover) {
+  body,
+  a,
+  button,
+  input,
+  textarea {
+    cursor: none !important;
+  }
+
+  #cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--accent2);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+    transition:
+      width 0.2s,
+      height 0.2s,
+      border-color 0.2s,
+      background 0.2s;
+    mix-blend-mode: difference;
+  }
+
+  #cursorDot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10001;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 10px var(--accent);
+  }
+
+  /* Expand cursor on hoverable elements */
+  body:has(a:hover) #cursor,
+  body:has(button:hover) #cursor {
+    width: 40px;
+    height: 40px;
+    border-color: var(--accent);
+    background: rgba(0, 255, 255, 0.1);
+  }
+}
+
+/* ============ GLITCH HOVER EFFECT ============ */
+.glitch-hover {
+  display: inline-block;
+  transition: color 0.1s;
+}
+.glitch-hover:hover {
+  animation: textGlitch 0.3s linear infinite;
+  color: var(--accent2) !important;
+}
+@keyframes textGlitch {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 1px);
+  }
+  40% {
+    transform: translate(-2px, -1px);
+  }
+  60% {
+    transform: translate(2px, 1px);
+  }
+  80% {
+    transform: translate(2px, -1px);
+  }
+  100% {
+    transform: translate(0);
+  }
 }
 
 /* BOOT SEQUENCE */

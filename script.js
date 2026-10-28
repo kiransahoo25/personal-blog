@@ -80,7 +80,7 @@ const DATA = {
 };
 
 /* =========================================================
-   2. HELPERS
+   2. HELPERS & STATE
    ========================================================= */
 const el = (s, r = document) => r.querySelector(s);
 const esc = (s) =>
@@ -91,9 +91,45 @@ const esc = (s) =>
         c
       ],
   );
+const chars = "!<>-_\\/[]{}—=+*^?#________";
 
 /* =========================================================
-   3. BOOT SEQUENCE & MOUSE GLOW
+   3. CUSTOM CURSOR & SCROLL
+   ========================================================= */
+const cursor = el("#cursor");
+const cursorDot = el("#cursorDot");
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
+let cursorX = mouseX;
+let cursorY = mouseY;
+
+if (window.matchMedia("(hover: hover)").matches) {
+  document.addEventListener("mousemove", (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    // Instantly move the dot
+    if (cursorDot) {
+      cursorDot.style.left = mouseX + "px";
+      cursorDot.style.top = mouseY + "px";
+    }
+  });
+
+  // Smooth animation loop for the outer circle
+  function animateCursor() {
+    cursorX += (mouseX - cursorX) * 0.15;
+    cursorY += (mouseY - cursorY) * 0.15;
+    if (cursor) {
+      cursor.style.left = cursorX + "px";
+      cursor.style.top = cursorY + "px";
+    }
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+}
+
+/* =========================================================
+   4. BOOT SEQUENCE & SCANNER
    ========================================================= */
 const bootLines = [
   "> INITIALIZING SYSTEM...",
@@ -123,125 +159,9 @@ async function runBoot() {
   document
     .querySelectorAll(".reveal")
     .forEach((node) => node.classList.add("in"));
-
-  // Trigger the Hologram Scanner after boot finishes
   setTimeout(runHoloScanner, 500);
 }
 
-const glow = el("#mouseGlow");
-if (glow && window.matchMedia("(hover: hover)").matches) {
-  document.addEventListener("mousemove", (e) => {
-    glow.style.left = e.clientX + "px";
-    glow.style.top = e.clientY + "px";
-  });
-}
-
-document.addEventListener(
-  "touchstart",
-  (e) => {
-    if (e.target.closest("a, button") && navigator.vibrate) {
-      navigator.vibrate(15);
-    }
-  },
-  { passive: true },
-);
-
-/* =========================================================
-   4. RENDER PROFILE & SIDEBAR CARDS
-   ========================================================= */
-function renderChrome() {
-  el("#avatar").textContent = DATA.initials;
-  el("#name").textContent = DATA.name;
-  el("#name").setAttribute("data-text", DATA.name);
-  el("#role").textContent = DATA.role;
-  el("#bio").textContent = DATA.bio;
-  el("#footerName").textContent = DATA.name;
-  el("#year").textContent = new Date().getFullYear();
-  document.title = DATA.name;
-
-  el("#socials").innerHTML = DATA.socials
-    .map(
-      (s) =>
-        `<a class="btn" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`,
-    )
-    .join("");
-
-  el("#aboutCard").innerHTML = `
-    <h3>USER_DATA</h3>
-    <ul class="facts">
-      <li><span>[LOC]</span><span>${esc(DATA.location)}</span></li>
-      <li><span>[ROLE]</span><span>${esc(DATA.role)}</span></li>
-      <li><span>[MAIL]</span><a href="mailto:${esc(DATA.email)}">${esc(DATA.email)}</a></li>
-    </ul>`;
-
-  el("#skillsCard").innerHTML = `
-    <h3>SKILL_MATRIX</h3>
-    ${DATA.skills
-      .map(
-        (s) => `
-      <div class="skill">
-        <div class="skill-head"><span>${esc(s.name)}</span><span class="pct">${s.level}%</span></div>
-        <div class="bar"><i data-level="${s.level}"></i></div>
-      </div>`,
-      )
-      .join("")}`;
-
-  el("#timelineCard").innerHTML = `
-    <h3>CHRONO_LOG</h3>
-    <ul class="timeline">
-      ${DATA.timeline.map((t) => `<li><span class="year">${esc(t.year)}</span><p>${esc(t.text)}</p></li>`).join("")}
-    </ul>`;
-}
-
-/* =========================================================
-   5. RENDER LIVE PROJECTS & 3D TILT
-   ========================================================= */
-function renderProjects() {
-  el("#liveProjectsCard").innerHTML = `
-    <h3>ACTIVE_PROJECTS</h3>
-    ${DATA.liveProjects
-      .map(
-        (p) => `
-      <div class="live-project tilt-card">
-        <div class="live-project-header">
-          <a class="live-project-title" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a>
-        </div>
-        <p class="live-project-desc">${esc(p.description)}</p>
-        <ul class="project-points">
-          ${p.points.map((point) => `<li>${esc(point)}</li>`).join("")}
-        </ul>
-        <div class="live-project-features">
-          ${p.features.map((f) => `<span>${esc(f)}</span>`).join("")}
-        </div>
-        <a class="live-project-open-btn" href="${esc(p.url)}" target="_blank" rel="noopener">
-          INITIALIZE_PROJECT ↗
-        </a>
-      </div>`,
-      )
-      .join("")}
-  `;
-
-  const cards = document.querySelectorAll(".tilt-card");
-  cards.forEach((card) => {
-    card.addEventListener("mousemove", (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -5;
-      const rotateY = ((x - centerX) / centerX) * 5;
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-    });
-    card.addEventListener("mouseleave", () => {
-      card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
-    });
-  });
-}
-
-/* =========================================================
-   6. HOLOGRAPHIC ID SCANNER
-   ========================================================= */
 async function runHoloScanner() {
   const holoCard = document.getElementById("holoCard");
   const holoCity = document.getElementById("holoCity");
@@ -271,7 +191,6 @@ async function runHoloScanner() {
     holoDevice.textContent = deviceStr;
     holoTime.textContent = timeStr;
 
-    // SVG Glitch Avatar
     holoFace.innerHTML = `
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:100%; height:100%;">
         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
@@ -281,7 +200,6 @@ async function runHoloScanner() {
     holoCard.classList.add("active");
     if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
 
-    // Fade out after 6 seconds
     setTimeout(() => {
       holoCard.style.opacity = "0";
       holoCard.style.transform = "translateY(-20px) scale(0.9)";
@@ -291,7 +209,136 @@ async function runHoloScanner() {
 }
 
 /* =========================================================
-   7. CYBERPUNK GEO-LOCATION MAP
+   5. RENDER & GLITCH EFFECT
+   ========================================================= */
+function applyGlitchHover(el) {
+  let isAnimating = false;
+  el.addEventListener("mouseenter", (event) => {
+    if (isAnimating) return;
+    isAnimating = true;
+    let iterations = 0;
+
+    const originalText = event.target.dataset.value || event.target.innerText;
+    event.target.dataset.value = originalText;
+
+    const interval = setInterval(() => {
+      event.target.innerText = originalText
+        .split("")
+        .map((letter, index) => {
+          if (index < iterations) {
+            return originalText[index];
+          }
+          return chars[Math.floor(Math.random() * chars.length)];
+        })
+        .join("");
+
+      if (iterations >= originalText.length) {
+        clearInterval(interval);
+        isAnimating = false;
+      }
+      iterations += 1 / 3;
+    }, 30);
+  });
+}
+
+function renderChrome() {
+  el("#avatar").textContent = DATA.initials;
+  el("#name").textContent = DATA.name;
+  el("#name").setAttribute("data-text", DATA.name);
+  el("#role").textContent = DATA.role;
+  el("#bio").textContent = DATA.bio;
+  el("#footerName").textContent = DATA.name;
+  el("#year").textContent = new Date().getFullYear();
+  document.title = DATA.name;
+
+  el("#socials").innerHTML = DATA.socials
+    .map(
+      (s) =>
+        `<a class="btn glitch-hover" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a>`,
+    )
+    .join("");
+
+  el("#aboutCard").innerHTML = `
+    <h3>USER_DATA</h3>
+    <ul class="facts">
+      <li><span>[LOC]</span><span>${esc(DATA.location)}</span></li>
+      <li><span>[ROLE]</span><span>${esc(DATA.role)}</span></li>
+      <li><span>[MAIL]</span><a href="mailto:${esc(DATA.email)}" class="glitch-hover">${esc(DATA.email)}</a></li>
+    </ul>`;
+
+  el("#skillsCard").innerHTML = `
+    <h3>SKILL_MATRIX</h3>
+    ${DATA.skills
+      .map(
+        (s) => `
+      <div class="skill">
+        <div class="skill-head"><span>${esc(s.name)}</span><span class="pct">${s.level}%</span></div>
+        <div class="bar"><i data-level="${s.level}"></i></div>
+      </div>`,
+      )
+      .join("")}`;
+
+  el("#timelineCard").innerHTML = `
+    <h3>CHRONO_LOG</h3>
+    <ul class="timeline">
+      ${DATA.timeline.map((t) => `<li><span class="year">${esc(t.year)}</span><p>${esc(t.text)}</p></li>`).join("")}
+    </ul>`;
+
+  // Apply glitch to all text links
+  document.querySelectorAll(".glitch-hover").forEach(applyGlitchHover);
+}
+
+function renderProjects() {
+  el("#liveProjectsCard").innerHTML = `
+    <h3>ACTIVE_PROJECTS</h3>
+    ${DATA.liveProjects
+      .map(
+        (p) => `
+      <div class="live-project tilt-card">
+        <div class="live-project-header">
+          <a class="live-project-title glitch-hover" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a>
+        </div>
+        <p class="live-project-desc">${esc(p.description)}</p>
+        <ul class="project-points">
+          ${p.points.map((point) => `<li>${esc(point)}</li>`).join("")}
+        </ul>
+        <div class="live-project-features">
+          ${p.features.map((f) => `<span>${esc(f)}</span>`).join("")}
+        </div>
+        <a class="live-project-open-btn glitch-hover" href="${esc(p.url)}" target="_blank" rel="noopener">
+          INITIALIZE_PROJECT ↗
+        </a>
+      </div>`,
+      )
+      .join("")}
+  `;
+
+  // Apply glitch to the project titles and buttons
+  document
+    .querySelectorAll("#liveProjectsCard .glitch-hover")
+    .forEach(applyGlitchHover);
+
+  // 3D Tilt
+  const cards = document.querySelectorAll(".tilt-card");
+  cards.forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = ((y - centerY) / centerY) * -5;
+      const rotateY = ((x - centerX) / centerX) * 5;
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+    });
+  });
+}
+
+/* =========================================================
+   6. MAP & CONTACT FORM
    ========================================================= */
 const scanBtn = el("#scanBtn");
 const mapContent = el("#mapContent");
@@ -354,9 +401,6 @@ function fallbackLocation() {
   }, 1000);
 }
 
-/* =========================================================
-   8. CONTACT FORM (Web3Forms)
-   ========================================================= */
 const contactForm = el("#contactForm");
 const formStatus = el("#formStatus");
 const submitBtn = el("#submitBtn");
@@ -371,7 +415,6 @@ if (contactForm) {
 
     const formData = new FormData(contactForm);
     const object = Object.fromEntries(formData);
-    const json = JSON.stringify(object);
 
     try {
       const res = await fetch("https://api.web3forms.com/submit", {
@@ -380,7 +423,7 @@ if (contactForm) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: json,
+        body: JSON.stringify(object),
       });
 
       const data = await res.json();
@@ -406,7 +449,7 @@ if (contactForm) {
 }
 
 /* =========================================================
-   9. SCROLL PROGRESS & REVEAL ANIMATIONS
+   7. SCROLL PROGRESS & REVEAL
    ========================================================= */
 addEventListener(
   "scroll",
@@ -438,7 +481,7 @@ function observeReveals() {
 }
 
 /* =========================================================
-   10. BOOT
+   8. BOOT
    ========================================================= */
 renderChrome();
 renderProjects();
