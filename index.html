@@ -1,9 +1,13 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Kiran Kumar Sahoo — Personal Blog</title>
+    <title>Kiran Kumar Sahoo</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -11,55 +15,51 @@
 
     <!-- ================= HERO ================= -->
     <header class="hero wrap">
-      <div class="avatar" id="avatar">KS</div>
+      <div class="avatar" id="avatar">KKS</div>
       <div class="hero-text">
-        <h1 id="name">Kiran Kumar Sahoo</h1>
+        <h1 id="name" class="glitch" data-text="Kiran Kumar Sahoo">
+          Kiran Kumar Sahoo
+        </h1>
         <p class="role" id="role"></p>
         <p class="bio" id="bio"></p>
         <div class="socials" id="socials"></div>
       </div>
     </header>
 
-    <!-- ================= TOOLBAR ================= -->
-    <div class="toolbar">
-      <div class="wrap toolbar-inner">
-        <div class="search">
-          <span aria-hidden="true">🔍</span>
-          <input
-            id="search"
-            type="search"
-            placeholder="Search posts…  (press /)"
-            autocomplete="off"
-            aria-label="Search posts"
-          />
-        </div>
-        <div class="chips" id="tags"></div>
-        <button class="btn ghost" id="themeBtn" aria-label="Toggle theme">
-          🌙 Dark
-        </button>
-      </div>
-    </div>
-
     <!-- ================= MAIN ================= -->
     <main class="wrap grid">
-      <!-- LEFT COLUMN: Live Projects + Posts -->
+      <!-- LEFT COLUMN: Live Projects -->
       <div class="main-column">
-        <div class="card side-card reveal" id="liveProjectsCard"></div>
-        <section id="posts" aria-live="polite"></section>
+        <div id="liveProjectsCard"></div>
       </div>
 
-      <!-- RIGHT COLUMN: Sidebar -->
+      <!-- RIGHT COLUMN: Sidebar (Map, About, Skills, Timeline) -->
       <aside class="sidebar">
+        <!-- Cyberpunk Map Card -->
+        <div class="card side-card reveal" id="mapCard">
+          <h3>SYS.TRACKER</h3>
+          <div id="cyberMap">
+            <div class="map-grid-bg"></div>
+            <div class="map-reticle"></div>
+            <div id="mapContent" class="map-content">
+              <button id="scanBtn" class="scan-btn">
+                [ INITIATE_GEO_SCAN ]
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="card side-card reveal" id="aboutCard"></div>
         <div class="card side-card reveal" id="skillsCard"></div>
         <div class="card side-card reveal" id="timelineCard"></div>
       </aside>
     </main>
 
+    <!-- ================= FOOTER ================= -->
     <footer class="wrap">
       <p>
-        © <span id="year"></span> <span id="footerName"></span> · Built with
-        plain HTML, CSS &amp; JS <span class="heart">♥</span>
+        © <span id="year"></span> <span id="footerName"></span> // ALL SYSTEMS
+        NOMINAL <span class="heart">♥</span>
       </p>
     </footer>
 
