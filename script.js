@@ -93,7 +93,61 @@ const esc = (s) =>
   );
 
 /* =========================================================
-   3. RENDER PROFILE & SIDEBAR CARDS
+   3. BOOT SEQUENCE & MOUSE GLOW
+   ========================================================= */
+const bootLines = [
+  "> INITIALIZING SYSTEM...",
+  "> BYPASSING FIREWALL...",
+  "> LOADING NEURAL PROFILE...",
+  "> WELCOME, KKS.",
+];
+
+async function runBoot() {
+  const bootText = el("#bootText");
+  const bootScreen = el("#bootScreen");
+  let text = "";
+
+  for (let line of bootLines) {
+    for (let char of line) {
+      text += char;
+      bootText.innerText = text;
+      await new Promise((r) => setTimeout(r, 30)); // Typing speed
+    }
+    text += "\n";
+    await new Promise((r) => setTimeout(r, 400)); // Pause between lines
+  }
+
+  await new Promise((r) => setTimeout(r, 800));
+  bootScreen.classList.add("hidden");
+
+  // Trigger the reveal animations after boot finishes
+  document
+    .querySelectorAll(".reveal")
+    .forEach((node) => node.classList.add("in"));
+}
+
+// Mouse Glow Tracking
+const glow = el("#mouseGlow");
+if (glow && window.matchMedia("(hover: hover)").matches) {
+  document.addEventListener("mousemove", (e) => {
+    glow.style.left = e.clientX + "px";
+    glow.style.top = e.clientY + "px";
+  });
+}
+
+// Haptic Feedback for Mobile
+document.addEventListener(
+  "touchstart",
+  (e) => {
+    if (e.target.closest("a, button") && navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+  },
+  { passive: true },
+);
+
+/* =========================================================
+   4. RENDER PROFILE & SIDEBAR CARDS
    ========================================================= */
 function renderChrome() {
   el("#avatar").textContent = DATA.initials;
@@ -103,8 +157,6 @@ function renderChrome() {
   el("#bio").textContent = DATA.bio;
   el("#footerName").textContent = DATA.name;
   el("#year").textContent = new Date().getFullYear();
-
-  // Title of the tab
   document.title = DATA.name;
 
   el("#socials").innerHTML = DATA.socials
@@ -142,7 +194,7 @@ function renderChrome() {
 }
 
 /* =========================================================
-   4. RENDER LIVE PROJECTS
+   5. RENDER LIVE PROJECTS & 3D TILT
    ========================================================= */
 function renderProjects() {
   el("#liveProjectsCard").innerHTML = `
@@ -150,7 +202,7 @@ function renderProjects() {
     ${DATA.liveProjects
       .map(
         (p) => `
-      <div class="live-project">
+      <div class="live-project tilt-card">
         <div class="live-project-header">
           <a class="live-project-title" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.title)}</a>
         </div>
@@ -168,57 +220,81 @@ function renderProjects() {
       )
       .join("")}
   `;
+
+  // Apply 3D Tilt Effect
+  const cards = document.querySelectorAll(".tilt-card");
+  cards.forEach((card) => {
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+
+      const rotateX = ((y - centerY) / centerY) * -5;
+      const rotateY = ((x - centerX) / centerX) * 5;
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+    });
+
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+    });
+  });
 }
 
 /* =========================================================
-   5. CYBERPUNK GEO-LOCATION TRACKER
+   6. CYBERPUNK GEO-LOCATION TRACKER
    ========================================================= */
 const scanBtn = el("#scanBtn");
 const mapContent = el("#mapContent");
 
-scanBtn.addEventListener("click", () => {
-  mapContent.innerHTML = `<div class="map-loaded">SCANNING_LOCATION...</div>`;
+if (scanBtn) {
+  scanBtn.addEventListener("click", () => {
+    mapContent.innerHTML = `<div class="map-loaded">SCANNING_LOCATION...</div>`;
 
-  if (!navigator.geolocation) {
-    fallbackLocation();
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      const lat = position.coords.latitude;
-      const lon = position.coords.longitude;
-
-      try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`,
-        );
-        const data = await res.json();
-
-        const city =
-          data.address.city ||
-          data.address.town ||
-          data.address.village ||
-          data.address.county ||
-          "UNKNOWN_SECTOR";
-        const country = data.address.country || "UNKNOWN_REGION";
-
-        mapContent.innerHTML = `
-          <div class="map-loaded">
-            <span class="map-city">${city.toUpperCase()}</span>
-            <span class="map-country">${country.toUpperCase()}</span>
-            <span class="map-coords">LAT: ${lat.toFixed(4)} // LON: ${lon.toFixed(4)}</span>
-          </div>
-        `;
-      } catch (error) {
-        mapContent.innerHTML = `<div class="map-loaded">CONNECTION_ERROR</div>`;
-      }
-    },
-    (error) => {
+    if (!navigator.geolocation) {
       fallbackLocation();
-    },
-  );
-});
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`,
+          );
+          const data = await res.json();
+
+          const city =
+            data.address.city ||
+            data.address.town ||
+            data.address.village ||
+            data.address.county ||
+            "UNKNOWN_SECTOR";
+          const country = data.address.country || "UNKNOWN_REGION";
+
+          mapContent.innerHTML = `
+            <div class="map-loaded">
+              <span class="map-city">${city.toUpperCase()}</span>
+              <span class="map-country">${country.toUpperCase()}</span>
+              <span class="map-coords">LAT: ${lat.toFixed(4)} // LON: ${lon.toFixed(4)}</span>
+            </div>
+          `;
+        } catch (error) {
+          mapContent.innerHTML = `<div class="map-loaded">CONNECTION_ERROR</div>`;
+        }
+      },
+      (error) => {
+        fallbackLocation();
+      },
+    );
+  });
+}
 
 function fallbackLocation() {
   setTimeout(() => {
@@ -233,7 +309,7 @@ function fallbackLocation() {
 }
 
 /* =========================================================
-   6. SCROLL PROGRESS & REVEAL ANIMATIONS
+   7. SCROLL PROGRESS & REVEAL ANIMATIONS
    ========================================================= */
 addEventListener(
   "scroll",
@@ -252,11 +328,9 @@ function observeReveals() {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add("in");
-
         entry.target.querySelectorAll(".bar > i").forEach((bar) => {
           bar.style.width = bar.dataset.level + "%";
         });
-
         io.unobserve(entry.target);
       });
     },
@@ -267,8 +341,9 @@ function observeReveals() {
 }
 
 /* =========================================================
-   7. BOOT
+   8. BOOT
    ========================================================= */
 renderChrome();
 renderProjects();
 observeReveals();
+runBoot(); // Start the boot sequence!
