@@ -76,7 +76,7 @@ body::before {
 }
 
 /* ============ CUSTOM CYBERPUNK CURSOR ============ */
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   body,
   a,
   button,
@@ -118,7 +118,6 @@ body::before {
     box-shadow: 0 0 10px var(--accent);
   }
 
-  /* Expand cursor on hoverable elements */
   body:has(a:hover) #cursor,
   body:has(button:hover) #cursor {
     width: 40px;
@@ -127,13 +126,21 @@ body::before {
     background: rgba(0, 255, 255, 0.1);
   }
 }
+@media (hover: none) {
+  /* Hide custom cursor entirely on mobile/tablets */
+  #cursor,
+  #cursorDot {
+    display: none !important;
+  }
+}
 
 /* ============ GLITCH HOVER EFFECT ============ */
 .glitch-hover {
   display: inline-block;
   transition: color 0.1s;
 }
-.glitch-hover:hover {
+.glitch-hover:hover,
+.glitch-hover:active {
   animation: textGlitch 0.3s linear infinite;
   color: var(--accent2) !important;
 }
@@ -335,7 +342,8 @@ a {
   align-items: center;
   gap: 8px;
 }
-.btn:hover {
+.btn:hover,
+.btn:active {
   background: var(--accent);
   color: var(--bg);
   box-shadow: 0 0 15px var(--accent);
@@ -376,7 +384,6 @@ a {
     box-shadow 0.3s ease;
   transform-style: preserve-3d;
 }
-/* Cyberpunk corner accents */
 .card::before,
 .card::after {
   content: "";
@@ -605,7 +612,8 @@ a {
   transition: all 0.2s;
   box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
 }
-.scan-btn:hover {
+.scan-btn:hover,
+.scan-btn:active {
   background: var(--accent2);
   color: #000;
   box-shadow: 0 0 20px var(--accent2);
@@ -649,6 +657,73 @@ a {
   display: block;
 }
 
+/* ============ SYSTEM STATUS WIDGET ============ */
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+  font-family: var(--font-display);
+}
+.status-label {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+.status-value {
+  font-weight: bold;
+}
+.status-value.online {
+  color: #00ff66;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+}
+.text-accent {
+  color: var(--accent);
+}
+.text-accent2 {
+  color: var(--accent2);
+}
+.blink {
+  width: 8px;
+  height: 8px;
+  background: #00ff66;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00ff66;
+  animation: pulse-green 1.5s infinite;
+}
+@keyframes pulse-green {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.8);
+  }
+}
+.status-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #1a1a24;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.status-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  transition:
+    width 1s ease,
+    background 0.3s,
+    box-shadow 0.3s;
+}
+
 /* ============ SIDEBAR CARDS ============ */
 .side-card {
   padding: 22px;
@@ -687,7 +762,8 @@ a {
   border: 1px solid var(--border);
   position: relative;
 }
-.live-project:hover {
+.live-project:hover,
+.live-project:active {
   border-color: var(--accent2);
   box-shadow: 0 0 30px rgba(255, 0, 255, 0.15);
 }
@@ -757,7 +833,8 @@ a {
   );
   transition: all 0.2s ease;
 }
-.live-project-open-btn:hover {
+.live-project-open-btn:hover,
+.live-project-open-btn:active {
   background: var(--accent);
   box-shadow: 0 0 20px var(--accent);
 }
@@ -810,7 +887,8 @@ a {
   transition: all 0.2s ease;
   margin-top: 4px;
 }
-.submit-btn:hover {
+.submit-btn:hover,
+.submit-btn:active {
   background: var(--accent);
   color: #000;
   box-shadow: 0 0 15px var(--accent);
@@ -963,29 +1041,46 @@ footer .heart {
 }
 
 /* =========================================================
-   📱 MOBILE RESPONSIVENESS
+   📱 MOBILE RESPONSIVENESS (Tablets & Phones)
    ========================================================= */
 @media (max-width: 920px) {
+  /* Layout adjustments */
   .grid {
     grid-template-columns: 1fr;
-    gap: 20px;
-    padding-top: 20px;
+    gap: 24px;
+    padding-top: 16px;
+    padding-bottom: 40px;
   }
   .sidebar {
     position: static;
+    display: flex;
+    flex-direction: column;
   }
+
+  /* Hero adjustments */
   .hero {
     padding: 40px 0 24px;
-    gap: 20px;
+    gap: 16px;
+    justify-content: center;
+    text-align: center;
   }
   .avatar {
-    width: 80px;
-    height: 80px;
-    font-size: 24px;
+    width: 90px;
+    height: 90px;
+    font-size: 28px;
+    margin: 0 auto;
   }
   .hero h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
+  .bio {
+    margin: 0 auto 1.5em auto;
+  }
+  .socials {
+    justify-content: center;
+  }
+
+  /* Spacing adjustments */
   .wrap {
     width: 100% - 24px;
   }
@@ -995,5 +1090,60 @@ footer .heart {
   }
   .side-card {
     padding: 18px;
+  }
+  .post-title {
+    font-size: 1.2rem;
+  }
+  .project-points {
+    font-size: 0.85rem;
+  }
+
+  /* Disable 3D tilt on mobile so scrolling isn't blocked */
+  .main-column {
+    perspective: none;
+  }
+
+  /* Fix boot sequence width for small phones */
+  #bootText {
+    width: 90%;
+    max-width: 300px;
+    font-size: 1rem;
+  }
+
+  /* Make sure the map and hologram fit the screen */
+  .holo-card {
+    padding: 12px 16px;
+  }
+  .holo-data p {
+    font-size: 0.75rem;
+  }
+  #cyberMap {
+    height: 160px;
+  }
+}
+
+/* Extra small phones */
+@media (max-width: 400px) {
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+  .avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 22px;
+  }
+  .btn {
+    font-size: 0.75rem;
+    padding: 8px 12px;
+  }
+  .live-project-title {
+    font-size: 1.2rem;
+  }
+  .holo-photo {
+    display: none;
+  } /* Hide fake face on tiny screens to save space */
+  .holo-data {
+    width: 100%;
+    text-align: center;
   }
 }

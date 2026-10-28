@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- CUSTOM CYBERPUNK CURSOR -->
+    <!-- CUSTOM CYBERPUNK CURSOR (Desktop Only) -->
     <div id="cursor"></div>
     <div id="cursorDot"></div>
 
@@ -20,7 +20,7 @@
       <div id="bootText"></div>
     </div>
 
-    <!-- MOUSE GLOW -->
+    <!-- MOUSE GLOW (Desktop Only) -->
     <div class="mouse-glow" id="mouseGlow"></div>
 
     <div class="progress"><i id="progressBar"></i></div>
@@ -84,6 +84,44 @@
               <button id="scanBtn" class="scan-btn">
                 [ INITIATE_GEO_SCAN ]
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SYSTEM STATUS WIDGET -->
+        <div class="card side-card reveal" id="statusCard">
+          <h3>SYSTEM.STATUS</h3>
+
+          <div class="status-row">
+            <span class="status-label">UPLINK</span>
+            <span class="status-value online"
+              ><span class="blink"></span> ONLINE</span
+            >
+          </div>
+
+          <div class="status-row">
+            <span class="status-label">CURRENT_OP</span>
+            <span class="status-value text-accent">Building Next.js App</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-label">LEARNING</span>
+            <span class="status-value text-accent2">Advanced DSA & TS</span>
+          </div>
+
+          <div class="status-row" style="margin-top: 12px; display: block">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 4px;
+              "
+            >
+              <span class="status-label">NEURAL_LOAD</span>
+              <span class="status-label text-accent" id="cpuLoad">78%</span>
+            </div>
+            <div class="status-bar-bg">
+              <div class="status-bar-fill" id="cpuBar" style="width: 78%"></div>
             </div>
           </div>
         </div>

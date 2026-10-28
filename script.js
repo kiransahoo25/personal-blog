@@ -80,7 +80,7 @@ const DATA = {
 };
 
 /* =========================================================
-   2. HELPERS & STATE
+   2. HELPERS & DEVICE DETECTION
    ========================================================= */
 const el = (s, r = document) => r.querySelector(s);
 const esc = (s) =>
@@ -93,8 +93,11 @@ const esc = (s) =>
   );
 const chars = "!<>-_\\/[]{}—=+*^?#________";
 
+// Detect if device is touch-only (no mouse)
+const isTouchDevice = window.matchMedia("(hover: none)").matches;
+
 /* =========================================================
-   3. CUSTOM CURSOR & SCROLL
+   3. CUSTOM CURSOR (Desktop Only)
    ========================================================= */
 const cursor = el("#cursor");
 const cursorDot = el("#cursorDot");
@@ -103,26 +106,22 @@ let mouseY = window.innerHeight / 2;
 let cursorX = mouseX;
 let cursorY = mouseY;
 
-if (window.matchMedia("(hover: hover)").matches) {
+if (!isTouchDevice && cursor && cursorDot) {
   document.addEventListener("mousemove", (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
 
     // Instantly move the dot
-    if (cursorDot) {
-      cursorDot.style.left = mouseX + "px";
-      cursorDot.style.top = mouseY + "px";
-    }
+    cursorDot.style.left = mouseX + "px";
+    cursorDot.style.top = mouseY + "px";
   });
 
   // Smooth animation loop for the outer circle
   function animateCursor() {
     cursorX += (mouseX - cursorX) * 0.15;
     cursorY += (mouseY - cursorY) * 0.15;
-    if (cursor) {
-      cursor.style.left = cursorX + "px";
-      cursor.style.top = cursorY + "px";
-    }
+    cursor.style.left = cursorX + "px";
+    cursor.style.top = cursorY + "px";
     requestAnimationFrame(animateCursor);
   }
   animateCursor();
@@ -176,8 +175,7 @@ async function runHoloScanner() {
     hour: "2-digit",
     minute: "2-digit",
   });
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const deviceStr = isMobile ? "MOBILE_NODE" : "DESKTOP_NODE";
+  const deviceStr = isTouchDevice ? "MOBILE_NODE" : "DESKTOP_NODE";
 
   let cityStr = "UNKNOWN";
   try {
@@ -213,16 +211,18 @@ async function runHoloScanner() {
    ========================================================= */
 function applyGlitchHover(el) {
   let isAnimating = false;
-  el.addEventListener("mouseenter", (event) => {
+
+  const triggerGlitch = (event) => {
     if (isAnimating) return;
     isAnimating = true;
     let iterations = 0;
 
-    const originalText = event.target.dataset.value || event.target.innerText;
-    event.target.dataset.value = originalText;
+    const target = event.target;
+    const originalText = target.dataset.value || target.innerText;
+    target.dataset.value = originalText;
 
     const interval = setInterval(() => {
-      event.target.innerText = originalText
+      target.innerText = originalText
         .split("")
         .map((letter, index) => {
           if (index < iterations) {
@@ -238,7 +238,11 @@ function applyGlitchHover(el) {
       }
       iterations += 1 / 3;
     }, 30);
-  });
+  };
+
+  // Trigger on hover for desktop, touch for mobile
+  el.addEventListener("mouseenter", triggerGlitch);
+  el.addEventListener("touchstart", triggerGlitch, { passive: true });
 }
 
 function renderChrome() {
@@ -284,7 +288,6 @@ function renderChrome() {
       ${DATA.timeline.map((t) => `<li><span class="year">${esc(t.year)}</span><p>${esc(t.text)}</p></li>`).join("")}
     </ul>`;
 
-  // Apply glitch to all text links
   document.querySelectorAll(".glitch-hover").forEach(applyGlitchHover);
 }
 
@@ -313,28 +316,29 @@ function renderProjects() {
       .join("")}
   `;
 
-  // Apply glitch to the project titles and buttons
   document
     .querySelectorAll("#liveProjectsCard .glitch-hover")
     .forEach(applyGlitchHover);
 
-  // 3D Tilt
-  const cards = document.querySelectorAll(".tilt-card");
-  cards.forEach((card) => {
-    card.addEventListener("mousemove", (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const rotateX = ((y - centerY) / centerY) * -5;
-      const rotateY = ((x - centerX) / centerX) * 5;
-      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+  // Only apply 3D Tilt on non-touch devices (desktop)
+  if (!isTouchDevice) {
+    const cards = document.querySelectorAll(".tilt-card");
+    cards.forEach((card) => {
+      card.addEventListener("mousemove", (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -5;
+        const rotateY = ((x - centerX) / centerX) * 5;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+      });
+      card.addEventListener("mouseleave", () => {
+        card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
+      });
     });
-    card.addEventListener("mouseleave", () => {
-      card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
-    });
-  });
+  }
 }
 
 /* =========================================================
@@ -449,7 +453,33 @@ if (contactForm) {
 }
 
 /* =========================================================
-   7. SCROLL PROGRESS & REVEAL
+   7. SYSTEM LOAD ANIMATION
+   ========================================================= */
+function animateLoad() {
+  const cpuBar = document.getElementById("cpuBar");
+  const cpuLoad = document.getElementById("cpuLoad");
+
+  if (!cpuBar || !cpuLoad) return;
+
+  const randomLoad = Math.floor(Math.random() * (92 - 65 + 1) + 65);
+  cpuBar.style.width = `${randomLoad}%`;
+  cpuLoad.textContent = `${randomLoad}%`;
+
+  if (randomLoad > 85) {
+    cpuBar.style.background = "var(--accent2)";
+    cpuBar.style.boxShadow = "0 0 10px var(--accent2)";
+    cpuLoad.style.color = "var(--accent2)";
+  } else {
+    cpuBar.style.background = "var(--accent)";
+    cpuBar.style.boxShadow = "0 0 10px var(--accent)";
+    cpuLoad.style.color = "var(--accent)";
+  }
+
+  setTimeout(animateLoad, Math.random() * 2500 + 2500);
+}
+
+/* =========================================================
+   8. SCROLL & INIT
    ========================================================= */
 addEventListener(
   "scroll",
@@ -480,10 +510,22 @@ function observeReveals() {
   document.querySelectorAll(".reveal").forEach((node) => io.observe(node));
 }
 
+// Haptic feedback for mobile taps
+document.addEventListener(
+  "touchstart",
+  (e) => {
+    if (e.target.closest("a, button") && navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+  },
+  { passive: true },
+);
+
 /* =========================================================
-   8. BOOT
+   9. BOOT
    ========================================================= */
 renderChrome();
 renderProjects();
 observeReveals();
 runBoot();
+setTimeout(animateLoad, 3000);
