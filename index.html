@@ -34,6 +34,33 @@
       </div>
     </header>
 
+    <!-- HOLOGRAPHIC ID SCANNER -->
+    <section class="wrap" id="hologramContainer">
+      <div class="holo-card" id="holoCard">
+        <div class="holo-scanline"></div>
+        <div class="holo-header">
+          <span class="holo-status">TARGET ACQUIRED</span>
+          <span class="holo-crosshair">⊕</span>
+        </div>
+        <div class="holo-body">
+          <div class="holo-data">
+            <p>
+              SECTOR: <span id="holoCity" class="holo-accent">SCANNING...</span>
+            </p>
+            <p>
+              NODE: <span id="holoDevice" class="holo-accent">SCANNING...</span>
+            </p>
+            <p>
+              TIME: <span id="holoTime" class="holo-accent">SYNCING...</span>
+            </p>
+          </div>
+          <div class="holo-photo">
+            <div class="holo-face" id="holoFace"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ================= MAIN ================= -->
     <main class="wrap grid">
       <!-- LEFT COLUMN: Live Projects -->
@@ -41,7 +68,7 @@
         <div id="liveProjectsCard"></div>
       </div>
 
-      <!-- RIGHT COLUMN: Sidebar (Map, About, Skills, Timeline) -->
+      <!-- RIGHT COLUMN: Sidebar (Map, About, Contact, Skills, Timeline) -->
       <aside class="sidebar">
         <!-- Cyberpunk Map Card -->
         <div class="card side-card reveal" id="mapCard">
@@ -59,6 +86,63 @@
         </div>
 
         <div class="card side-card reveal" id="aboutCard"></div>
+
+        <!-- Contact Form Card -->
+        <div class="card side-card reveal" id="contactCard">
+          <h3>TRANSMIT_MSG</h3>
+          <form id="contactForm" class="cyber-form">
+            <!-- ⚠️ REPLACE WITH YOUR WEB3FORMS ACCESS KEY -->
+            <input
+              type="hidden"
+              name="access_key"
+              value="8f24fe23-3f52-4220-94b4-e69e701fa000"
+            />
+            <input
+              type="hidden"
+              name="subject"
+              value="New Transmission from Portfolio"
+            />
+
+            <div class="form-group">
+              <label for="formName">IDENTIFIER</label>
+              <input
+                type="text"
+                id="formName"
+                name="name"
+                placeholder="Your name..."
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="formEmail">RETURN_SIGNAL</label>
+              <input
+                type="email"
+                id="formEmail"
+                name="email"
+                placeholder="your@email.com"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="formMessage">PAYLOAD</label>
+              <textarea
+                id="formMessage"
+                name="message"
+                rows="3"
+                placeholder="Enter message..."
+                required
+              ></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+              [ SEND_TRANSMISSION ]
+            </button>
+            <div id="formStatus" class="form-status"></div>
+          </form>
+        </div>
+
         <div class="card side-card reveal" id="skillsCard"></div>
         <div class="card side-card reveal" id="timelineCard"></div>
       </aside>

@@ -111,22 +111,23 @@ async function runBoot() {
     for (let char of line) {
       text += char;
       bootText.innerText = text;
-      await new Promise((r) => setTimeout(r, 30)); // Typing speed
+      await new Promise((r) => setTimeout(r, 30));
     }
     text += "\n";
-    await new Promise((r) => setTimeout(r, 400)); // Pause between lines
+    await new Promise((r) => setTimeout(r, 400));
   }
 
   await new Promise((r) => setTimeout(r, 800));
   bootScreen.classList.add("hidden");
 
-  // Trigger the reveal animations after boot finishes
   document
     .querySelectorAll(".reveal")
     .forEach((node) => node.classList.add("in"));
+
+  // Trigger the Hologram Scanner after boot finishes
+  setTimeout(runHoloScanner, 500);
 }
 
-// Mouse Glow Tracking
 const glow = el("#mouseGlow");
 if (glow && window.matchMedia("(hover: hover)").matches) {
   document.addEventListener("mousemove", (e) => {
@@ -135,7 +136,6 @@ if (glow && window.matchMedia("(hover: hover)").matches) {
   });
 }
 
-// Haptic Feedback for Mobile
 document.addEventListener(
   "touchstart",
   (e) => {
@@ -221,23 +221,18 @@ function renderProjects() {
       .join("")}
   `;
 
-  // Apply 3D Tilt Effect
   const cards = document.querySelectorAll(".tilt-card");
   cards.forEach((card) => {
     card.addEventListener("mousemove", (e) => {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
-
       const rotateX = ((y - centerY) / centerY) * -5;
       const rotateY = ((x - centerX) / centerX) * 5;
-
       card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
     });
-
     card.addEventListener("mouseleave", () => {
       card.style.transform = `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`;
     });
@@ -245,7 +240,58 @@ function renderProjects() {
 }
 
 /* =========================================================
-   6. CYBERPUNK GEO-LOCATION TRACKER
+   6. HOLOGRAPHIC ID SCANNER
+   ========================================================= */
+async function runHoloScanner() {
+  const holoCard = document.getElementById("holoCard");
+  const holoCity = document.getElementById("holoCity");
+  const holoDevice = document.getElementById("holoDevice");
+  const holoTime = document.getElementById("holoTime");
+  const holoFace = document.getElementById("holoFace");
+
+  if (!holoCard) return;
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const deviceStr = isMobile ? "MOBILE_NODE" : "DESKTOP_NODE";
+
+  let cityStr = "UNKNOWN";
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+    if (data.city) cityStr = data.city.toUpperCase();
+  } catch (e) {}
+
+  setTimeout(() => {
+    holoCity.textContent = cityStr;
+    holoDevice.textContent = deviceStr;
+    holoTime.textContent = timeStr;
+
+    // SVG Glitch Avatar
+    holoFace.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:100%; height:100%;">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+    `;
+
+    holoCard.classList.add("active");
+    if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+
+    // Fade out after 6 seconds
+    setTimeout(() => {
+      holoCard.style.opacity = "0";
+      holoCard.style.transform = "translateY(-20px) scale(0.9)";
+      setTimeout(() => holoCard.remove(), 600);
+    }, 6000);
+  }, 1500);
+}
+
+/* =========================================================
+   7. CYBERPUNK GEO-LOCATION MAP
    ========================================================= */
 const scanBtn = el("#scanBtn");
 const mapContent = el("#mapContent");
@@ -300,16 +346,67 @@ function fallbackLocation() {
   setTimeout(() => {
     mapContent.innerHTML = `
       <div class="map-loaded">
-        <span class="map-city">BARGARH</span>
-        <span class="map-country">ODISHA, INDIA</span>
-        <span class="map-coords">LAT: 21.3333 // LON: 83.6167</span>
+        <span class="map-city">NIGHT CITY</span>
+        <span class="map-country">CYBERSPACE</span>
+        <span class="map-coords">LAT: 35.6895 // LON: 139.6917</span>
       </div>
     `;
   }, 1000);
 }
 
 /* =========================================================
-   7. SCROLL PROGRESS & REVEAL ANIMATIONS
+   8. CONTACT FORM (Web3Forms)
+   ========================================================= */
+const contactForm = el("#contactForm");
+const formStatus = el("#formStatus");
+const submitBtn = el("#submitBtn");
+
+if (contactForm) {
+  contactForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.textContent = "[ TRANSMITTING... ]";
+    submitBtn.style.color = "var(--muted)";
+    submitBtn.style.borderColor = "var(--muted)";
+    submitBtn.disabled = true;
+
+    const formData = new FormData(contactForm);
+    const object = Object.fromEntries(formData);
+    const json = JSON.stringify(object);
+
+    try {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: json,
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        formStatus.textContent = "> TRANSMISSION SUCCESSFUL";
+        formStatus.className = "form-status success";
+        contactForm.reset();
+      } else {
+        formStatus.textContent = "> TRANSMISSION FAILED";
+        formStatus.className = "form-status error";
+      }
+    } catch (error) {
+      formStatus.textContent = "> CONNECTION_ERROR";
+      formStatus.className = "form-status error";
+    }
+
+    submitBtn.textContent = "[ SEND_TRANSMISSION ]";
+    submitBtn.style.color = "var(--accent)";
+    submitBtn.style.borderColor = "var(--accent)";
+    submitBtn.disabled = false;
+  });
+}
+
+/* =========================================================
+   9. SCROLL PROGRESS & REVEAL ANIMATIONS
    ========================================================= */
 addEventListener(
   "scroll",
@@ -341,9 +438,9 @@ function observeReveals() {
 }
 
 /* =========================================================
-   8. BOOT
+   10. BOOT
    ========================================================= */
 renderChrome();
 renderProjects();
 observeReveals();
-runBoot(); // Start the boot sequence!
+runBoot();

@@ -315,6 +315,131 @@ a {
   border-right: 2px solid var(--accent2);
 }
 
+/* ============ HOLOGRAPHIC ID SCANNER ============ */
+#hologramContainer {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px;
+  perspective: 1000px;
+}
+.holo-card {
+  background: rgba(0, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 16px 24px;
+  width: 100%;
+  max-width: 450px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 20px rgba(0, 255, 255, 0.1),
+    inset 0 0 20px rgba(0, 255, 255, 0.05);
+  opacity: 0;
+  transform: translateY(20px) rotateX(20deg);
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
+  font-family: var(--font-display);
+}
+.holo-card.active {
+  opacity: 1;
+  transform: translateY(0) rotateX(0deg);
+}
+.holo-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: holoScan 3s linear infinite;
+}
+@keyframes holoScan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+.holo-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+  color: var(--accent2);
+}
+.holo-crosshair {
+  animation: spin 4s linear infinite;
+}
+.holo-body {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.holo-data p {
+  margin: 4px 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+.holo-accent {
+  color: var(--accent);
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  font-weight: bold;
+}
+.holo-photo {
+  width: 60px;
+  height: 60px;
+  border: 1px dashed var(--accent2);
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.holo-face {
+  width: 40px;
+  height: 40px;
+  color: var(--accent);
+  animation: glitchFace 2s infinite alternate;
+}
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes glitchFace {
+  0% {
+    transform: translate(0);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+  }
+  60% {
+    transform: translate(2px, 2px);
+  }
+  80% {
+    transform: translate(2px, -2px);
+  }
+  100% {
+    transform: translate(0);
+  }
+}
+
 /* ============ CYBERPUNK MAP ============ */
 #mapCard {
   padding: 22px;
@@ -339,8 +464,6 @@ a {
     linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
 }
-
-/* NEW RADAR SWEEP */
 .map-radar {
   position: absolute;
   top: 50%;
@@ -364,7 +487,6 @@ a {
     transform: rotate(360deg);
   }
 }
-
 .map-reticle {
   position: absolute;
   top: 50%;
@@ -382,7 +504,6 @@ a {
     transform: translate(-50%, -50%) rotate(360deg);
   }
 }
-
 .map-content {
   position: relative;
   z-index: 2;
@@ -406,7 +527,6 @@ a {
   color: #000;
   box-shadow: 0 0 20px var(--accent2);
 }
-
 .map-loaded {
   color: var(--accent);
   font-family: var(--font-display);
@@ -507,7 +627,6 @@ a {
   color: var(--muted);
   line-height: 1.6;
 }
-
 .project-points {
   margin: 0 0 24px;
   padding-left: 20px;
@@ -521,7 +640,6 @@ a {
 .project-points li::marker {
   color: var(--accent);
 }
-
 .live-project-features {
   display: flex;
   flex-wrap: wrap;
@@ -536,7 +654,6 @@ a {
   border: 1px solid var(--border);
   color: var(--text);
 }
-
 .live-project-open-btn {
   display: inline-flex;
   align-items: center;
@@ -560,6 +677,72 @@ a {
 .live-project-open-btn:hover {
   background: var(--accent);
   box-shadow: 0 0 20px var(--accent);
+}
+
+/* ============ CONTACT FORM ============ */
+.cyber-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.form-group label {
+  font-size: 0.7rem;
+  color: var(--accent2);
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+}
+.form-group input,
+.form-group textarea {
+  background: #000;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  font-family: var(--font-main);
+  font-size: 0.85rem;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  resize: vertical;
+}
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.15);
+}
+.submit-btn {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  padding: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  margin-top: 4px;
+}
+.submit-btn:hover {
+  background: var(--accent);
+  color: #000;
+  box-shadow: 0 0 15px var(--accent);
+}
+.form-status {
+  font-size: 0.75rem;
+  font-family: var(--font-display);
+  text-align: center;
+  margin-top: 4px;
+}
+.form-status.success {
+  color: var(--accent);
+}
+.form-status.error {
+  color: #ff3333;
 }
 
 /* ============ SKILLS & TIMELINE ============ */
@@ -708,7 +891,6 @@ footer .heart {
   .sidebar {
     position: static;
   }
-
   .hero {
     padding: 40px 0 24px;
     gap: 20px;
@@ -721,7 +903,6 @@ footer .heart {
   .hero h1 {
     font-size: 1.8rem;
   }
-
   .wrap {
     width: 100% - 24px;
   }
